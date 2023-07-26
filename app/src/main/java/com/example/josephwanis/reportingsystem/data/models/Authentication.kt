@@ -1,4 +1,6 @@
 package com.example.josephwanis.reportingsystem.data.models
 
-class Authentication {
+sealed class AuthenticationState {
+    object Authenticated: AuthenticationState()
+    object Unauthenticated: AuthenticationState()
 }

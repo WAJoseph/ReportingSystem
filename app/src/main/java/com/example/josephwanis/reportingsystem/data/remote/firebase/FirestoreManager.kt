@@ -7,7 +7,7 @@ import kotlinx.coroutines.tasks.await
 object FirestoreManager {
 
     // Reference to the root Firestore collection
-    private val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     // Function to get the reference of a specific collection in Firestore
     fun getCollection(collectionName: String): CollectionReference {
@@ -25,7 +25,7 @@ object FirestoreManager {
     }
 
     // Function to update a document in a specific collection in Firestore
-    suspend fun updateDocument(collectionName: String, documentId: String, data: Map<String, Any>): Boolean {
+    suspend fun updateDocument(collectionName: String, documentId: String, data: Map<String, String?>): Boolean {
         return try {
             firestore.collection(collectionName).document(documentId).update(data).await()
             true

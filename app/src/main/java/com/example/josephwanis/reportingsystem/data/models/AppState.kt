@@ -1,4 +1,9 @@
 package com.example.josephwanis.reportingsystem.data.models
 
-class AppState {
+sealed class AppState {
+    object Loading: AppState()
+    data class Error(
+        val errorMessage: String
+        ): AppState()
+    object Idle: AppState()
 }

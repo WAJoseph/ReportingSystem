@@ -4,33 +4,34 @@ import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.tasks.await
 
 object FirebaseCloudMessagingManager {
 
     private const val TAG = "FirebaseCloudMessaging"
 
-    // Function to subscribe to a topic
-    fun subscribeToTopic(topic: String) {
-        FirebaseMessaging.getInstance().subscribeToTopic(topic)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Subscribed to topic: $topic")
-                } else {
-                    Log.e(TAG, "Failed to subscribe to topic: $topic")
-                }
-            }
+    // Function to subscribe to a topic (using coroutines)
+    suspend fun subscribeToTopic(topic: String): Boolean {
+        return try {
+            FirebaseMessaging.getInstance().subscribeToTopic(topic).await()
+            Log.d(TAG, "Subscribed to topic: $topic")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to subscribe to topic: $topic", e)
+            false
+        }
     }
 
-    // Function to unsubscribe from a topic
-    fun unsubscribeFromTopic(topic: String) {
-        FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Unsubscribed from topic: $topic")
-                } else {
-                    Log.e(TAG, "Failed to unsubscribe from topic: $topic")
-                }
-            }
+    // Function to unsubscribe from a topic (using coroutines)
+    suspend fun unsubscribeFromTopic(topic: String): Boolean {
+        return try {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(topic).await()
+            Log.d(TAG, "Unsubscribed from topic: $topic")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to unsubscribe from topic: $topic", e)
+            false
+        }
     }
 }
 
