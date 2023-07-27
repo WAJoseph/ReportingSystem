@@ -2,4 +2,10 @@
     <string name="app_name">ReportingSystem</string>
     <string name="password">password</string>
     <string name="email">email</string>
+    <string name="blocked_users">Blocked Users:</string>
+    <string name="unblock">Unblock user</string>
+    <string name="register">Register now</string>
+    <string name="display_name">username</string>
+    <string name="save">Save settings</string>
+    <string name="profile_updated">Profile updated successfuly</string>
 </resources>

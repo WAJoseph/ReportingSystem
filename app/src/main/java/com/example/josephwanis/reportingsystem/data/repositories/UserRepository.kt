@@ -1,8 +1,12 @@
 package com.example.josephwanis.reportingsystem.data.repositories
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.josephwanis.reportingsystem.data.models.User
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirestoreManager
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 

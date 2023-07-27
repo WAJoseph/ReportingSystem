@@ -19,6 +19,14 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
 
+    private val _senderId = MutableLiveData<String>()
+    val senderId: LiveData<String> get() = _senderId
+
+    // Function to update the sender ID in the ViewModel
+    fun updateSenderId(senderId: String) {
+        _senderId.value = senderId
+    }
+
     // Function to get chat messages for a specific chat session
     fun getChatMessages(sessionId: String) {
         viewModelScope.launch {
