@@ -1,28 +1,16 @@
 package com.example.josephwanis.reportingsystem.data.models
 
 data class User(
-
-    //took from the auth Token
-    val userId: String,
-
-    //shown to other users
-    val displayName: String,
-
-    //used to register and login
-    val email: String,
-
-    //Image shown to other users
-    val profileImageUri: String?,
-
-    //List of other users who blocked this user
+    val userId: String = "",
+    val displayName: String = "",
+    val email: String = "",
+    val profileImageUri: String? = null,
     val blockedByUsers: MutableSet<String> = mutableSetOf(),
-
-    //List of all known users
     val adminUserIds: MutableSet<String> = mutableSetOf(),
-
     val isKnown: Boolean = false
 ) {
-
+    // No-argument constructor for Firestore deserialization
+    constructor() : this("", "", "", null, mutableSetOf(), mutableSetOf(), false)
     // Function to check if the user is an admin
     fun isAdmin(): Boolean {
         // Add your logic here to determine if the user is an admin
@@ -47,15 +35,15 @@ data class User(
             "displayName" to displayName,
             "email" to email,
             "profileImageUri" to profileImageUri,
-            "blockedByUsers" to blockedByUsers.toSet(), // Convert to Set
-            "adminUserIds" to adminUserIds.toSet(), // Convert to Set
+            "blockedByUsers" to blockedByUsers.toList(), // Convert to Set
+            "adminUserIds" to adminUserIds.toList(), // Convert to Set
             "isKnown" to isKnown
         )
     }
 
     companion object {
         // Function to create a User object from a Map
-        fun fromMap(data: Map<String, Any>): User {
+        fun fromMap(data: Map<String, Any?>): User {
             return User(
                 userId = data["userId"] as String,
                 displayName = data["displayName"] as String,

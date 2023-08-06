@@ -25,10 +25,11 @@ class LoginViewModel(private val userRepository: UserRepository) : ViewModel() {
             _loginResult.value = LoginResult.Loading
             try {
                 val user = userRepository.loginUser(email, password)
+
                 if (user != null) {
                     _loginResult.value = LoginResult.Success(user)
                 } else {
-                    _loginResult.value = LoginResult.Error("Login failed. Please check your credentials.")
+                    _loginResult.value = LoginResult.Error("Login failed.")
                 }
             } catch (e: Exception) {
                 _loginResult.value = LoginResult.Error("An error occurred during login: ${e.message}")

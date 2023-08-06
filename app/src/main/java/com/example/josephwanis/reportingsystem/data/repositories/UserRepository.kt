@@ -1,57 +1,84 @@
 package com.example.josephwanis.reportingsystem.data.repositories
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.josephwanis.reportingsystem.data.models.User
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirestoreManager
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
 
     // Function to handle user registration using Firebase Authentication
-    suspend fun registerUser(email: String, password: String): User? {
-        try {
-            // Call the FirebaseAuthManager's registerUserWithEmailAndPassword function to register the user
-            val firebaseUser = firebaseAuthManager.registerUserWithEmailAndPassword(email, password)
-
-            if (firebaseUser != null) {
-                // Create a new user with the provided email and user ID from authentication
-                val newUser = User(firebaseUser.uid, email, email, null, mutableSetOf(), mutableSetOf(), false)
+    suspend fun registerUser(email: String, password: String, displayName: String): User {
+        return withContext(Dispatchers.IO) {
+            try {
+                val user = firebaseAuthManager.registerUserWithEmailAndPassword(email, password)
+                // Create a new user with the provided email, display name, and user ID from authentication
+                val newUser = User(user.uid, displayName, email, null, mutableSetOf(), mutableSetOf(), false)
 
                 // Add the user to Firestore
-                val documentId = FirestoreManager.addDocument("users", newUser.toMap() as Map<String, Any>)
+                FirestoreManager.addUserRegistrationDocument("users", user.uid, newUser.toMap())
 
                 // Return the new user if added successfully, otherwise return null
-                return if (documentId != null) {
-                    newUser
-                } else {
-                    null
+                newUser
+            } catch (e: Exception) {
+                // Handle registration failure (e.g., email already exists)
+                // Here, we'll throw an exception with an appropriate error message
+                when (e) {
+                    is FirebaseAuthUserCollisionException -> {
+                        throw Exception("Email is already registered. Please use a different email.")
+                    }
+                    is FirebaseNetworkException -> {
+                        throw Exception("Network error. Please check your internet connection and try again.")
+                    }
+                    else -> {
+                        throw Exception("An unexpected error occurred during registration. Please try again later.")
+                    }
                 }
-            } else {
-                return null
             }
-        } catch (e: Exception) {
-            // Handle registration failure (e.g., email already exists)
-            return null
         }
     }
+
 
     // Function to handle login using Firebase Authentication
     suspend fun loginUser(email: String, password: String): User? {
-        val firebaseUser = firebaseAuthManager.loginUserWithEmailAndPassword(email, password)
-        return if (firebaseUser != null) {
-            // Fetch the user data from Firestore using the user ID
-            FirestoreManager.getDocument("users", firebaseUser.uid)?.let { userData ->
-                User.fromMap(userData)
+        return withContext(Dispatchers.IO) {
+            try {
+                // Attempt to log in the user using Firebase Authentication
+                val user = firebaseAuthManager.loginUserWithEmailAndPassword(email, password)
+
+                // If the login is successful, fetch the user data from Firestore
+                FirestoreManager.getDocument("users", user.uid)?.let { userData -> User.fromMap(userData) }
+            } catch (e: Exception) {
+                // Handle login failure and provide appropriate error messages
+                when (e) {
+                    is FirebaseAuthInvalidUserException -> {
+                        // If the user account does not exist
+                        throw Exception("User not found. Please check your email and password.")
+                    }
+                    is FirebaseAuthInvalidCredentialsException -> {
+                        // If the user provided invalid credentials (wrong password)
+                        throw Exception("Invalid credentials. Please check your email and password.")
+                    }
+                    is FirebaseNetworkException -> {
+                        // If there is a network error
+                        throw Exception("Network error. Please check your internet connection and try again.")
+                    }
+                    else -> {
+                        // For any other unexpected errors
+                        throw Exception("An unexpected error occurred during login. Please try again later.")
+                    }
+                }
             }
-        }else {
-            null
         }
     }
+
 
     // Function to update the user's profile image URI in Firestore
     suspend fun updateUserProfileImage(userId: String, profileImageUri: String): Boolean {
@@ -130,9 +157,7 @@ class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
 
     // Function to fetch the user profile for a specific user
     suspend fun getUserProfile(userId: String): User? {
-        return FirestoreManager.getDocument("users", userId)?.let { userData ->
-            User.fromMap(userData)
-        }
+        return FirestoreManager.getDocument("users", userId)?.let { User.fromMap(it.toMap()) }
     }
 
     // Function to fetch blocked users for a specific user
@@ -143,5 +168,4 @@ class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
             FirestoreManager.getDocument("users", blockedUserId)?.let { User.fromMap(it) }
         }
     }
-
 }

@@ -1,8 +1,5 @@
-package com.example.josephwanis.reportingsystem.ui.activities
+package com.example.josephwanis.reportingsystem.ui.screens
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,13 +12,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,55 +30,27 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
 import com.example.josephwanis.reportingsystem.R
-import com.example.josephwanis.reportingsystem.data.viewmodels.LoginResult
-import com.example.josephwanis.reportingsystem.data.viewmodels.LoginViewModel
+import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
+import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.example.josephwanis.reportingsystem.data.viewmodels.RegistrationResult
+import com.example.josephwanis.reportingsystem.data.viewmodels.RegistrationViewModel
 import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
-import com.example.josephwanis.reportingsystem.ui.theme.ReportingSystemTheme
-
-class LoginActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?){
-        super.onCreate(savedInstanceState)
-
-        setContent{
-            ReportingSystemTheme{
-                val loginViewModel: LoginViewModel = viewModel()
-
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val navController = rememberNavController()
-                    NavHost(navController, startDestination = "login") {
-                        composable("login") {
-                            LoginScreen(loginViewModel, navController)
-                        }
-                        composable("chatList") {
-                            // Navigate to ChatListActivity or any other activity/fragment
-                            // You can handle navigation to the desired destination here.
-                            // For now, we are simply displaying a Text composable.
-                            Text("Chat List Activity")
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-}
 
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel, navController: NavHostController){
-    val emailState = remember { mutableStateOf("") }
-    val passwordState = remember {mutableStateOf("")}
+fun RegistrationScreen( navController: NavController) {
 
-    //Observe the loginResult LiveData
-    val loginResult = loginViewModel.loginResult.observeAsState()
+    val firebaseAuth = FirebaseAuthManager
+    val userRepository = UserRepository(firebaseAuth)
+    val registrationViewModel = RegistrationViewModel(userRepository)
+
+    val displayNameState = remember { mutableStateOf("") }
+    val emailState = remember { mutableStateOf("") }
+    val passwordState = remember { mutableStateOf("") }
+
+    // Observe the registrationResult LiveData
+    val registrationResult by registrationViewModel.registrationResult.observeAsState()
 
     Column(
         modifier = Modifier
@@ -89,10 +58,41 @@ fun LoginScreen(loginViewModel: LoginViewModel, navController: NavHostController
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ){
+    ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        //Email Text Field
+        // Display name Text Field
+        IconTextField(
+            icon = Icons.Default.Person,
+            placeholder = stringResource(id = R.string.display_name),
+            textField = {
+                BasicTextField(
+                    value = displayNameState.value,
+                    onValueChange = { displayNameState.value = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Next,
+                        keyboardType = KeyboardType.Text
+                    ),
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 8.dp),
+                    decorationBox = @Composable { innerTextField ->
+                        if (displayNameState.value.isEmpty()) {
+                            Text(stringResource(id = R.string.display_name), color = Color.Gray)
+                        } else {
+                            innerTextField()
+                        }
+                    }
+                )
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Email Text Field
         IconTextField(
             icon = Icons.Default.Email,
             placeholder = stringResource(id = R.string.email),
@@ -105,7 +105,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, navController: NavHostController
                         keyboardType = KeyboardType.Email
                     ),
                     singleLine = true,
-                    textStyle = typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
@@ -123,10 +123,10 @@ fun LoginScreen(loginViewModel: LoginViewModel, navController: NavHostController
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //password Text field
+        // Password Text field
         IconTextField(
             icon = Icons.Default.Lock,
-            placeholder = "Password",
+            placeholder = stringResource(id = R.string.password),
             textField = {
                 BasicTextField(
                     value = passwordState.value,
@@ -137,7 +137,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, navController: NavHostController
                     ),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    textStyle = typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
@@ -155,52 +155,44 @@ fun LoginScreen(loginViewModel: LoginViewModel, navController: NavHostController
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //Login Button
+        // Register Button
         Button(
             onClick = {
                 val email = emailState.value
                 val password = passwordState.value
-                //call the loginUser function in LoginViewModel passing the email and password
-                loginViewModel.loginUser(email, password)
+                val displayName = displayNameState.value
+                // call the registerUser function in RegistrationViewModel passing the email, password, and display name
+                registrationViewModel.registerUser(email, password, displayName)
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Text(text = "Login")
+            Text(text = stringResource(id = R.string.register))
         }
 
-        //Display the login result
-        when (val result = loginResult.value){
-            is LoginResult.Loading -> {
-                //Show loading indicator
+        // Display the registration result
+        when (val result = registrationResult) {
+
+            is RegistrationResult.Error -> {
+                // Handle the case when registrationResult is false (registration failed)
+                Text(text = result.error)
+            }
+            is RegistrationResult.Loading -> {
+                // Handle the case when registrationResult is null
                 CircularProgressIndicator()
             }
-            is LoginResult.Success -> {
-                navController.navigate("chatList")
-            }
-            is LoginResult.Error -> {
-                //Show error message
-                Text(text = "Error: ${result.error}")
+            is RegistrationResult.Success -> {
+                val userId = result.user.userId
+                val isKnown = result.user.isKnown
+                navController.navigate("chatList/$userId/$isKnown"){
+                    launchSingleTop = true
+                    popUpTo("login") {inclusive = true}
+                }
             }
             null -> {
-                Text(text = "Login result is null")
+                Text(text = "Unexpected registration result")
             }
         }
     }
 }
-
-//@Composable
-//fun IconTextField(
-//    icon: ImageVector,
-//    placeholder: String,
-//    textField: @Composable () -> Unit
-//) {
-//    Row(verticalAlignment = Alignment.CenterVertically) {
-//        Icon(imageVector = icon, contentDescription = null)
-//        Spacer(modifier = Modifier.width(8.dp))
-//        Box(modifier = Modifier.weight(1f)){
-//            textField()
-//        }
-//    }
-//}

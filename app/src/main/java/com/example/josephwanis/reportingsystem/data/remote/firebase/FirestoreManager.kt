@@ -1,7 +1,10 @@
 package com.example.josephwanis.reportingsystem.data.remote.firebase
 
+import android.util.Log
+import com.example.josephwanis.reportingsystem.data.models.User
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 object FirestoreManager {
@@ -15,12 +18,25 @@ object FirestoreManager {
     }
 
     // Function to add a document to a specific collection in Firestore
-    suspend fun addDocument(collectionName: String, data: Map<String, Any>): String? {
+    suspend fun addDocument(collectionName: String, data: Map<String, Any?>): String {
         return try {
             val docRef = firestore.collection(collectionName).add(data).await()
-            docRef.id
+            docRef.id // Return the document ID directly
         } catch (e: Exception) {
-            null
+            // Handle the exception if something goes wrong during the document creation
+            throw e
+        }
+    }
+
+    // Function to add a document to a specific collection in Firestore
+    suspend fun addUserRegistrationDocument(collectionName: String, documentId: String, data: Map<String, Any?>): String {
+        return try {
+            val docRef = firestore.collection(collectionName).document(documentId)
+            docRef.set(data, SetOptions.merge()).await() // Use set() with SetOptions.merge()
+            documentId // Return the specified document ID
+        } catch (e: Exception) {
+            // Handle the exception if something goes wrong during the document creation
+            throw e
         }
     }
 
@@ -58,9 +74,18 @@ object FirestoreManager {
     suspend fun getDocument(collectionName: String, documentId: String): Map<String, Any>? {
         return try {
             val snapshot = firestore.collection(collectionName).document(documentId).get().await()
-            snapshot.data
+            val data = snapshot.data
+            if (data != null) {
+                data
+            } else {
+                Log.d("FirestoreManager", "getDocument: Document not found or null")
+                null
+            }
         } catch (e: Exception) {
+            // Print the exception for debugging purposes
+            Log.e("FirestoreManager", "Error retrieving document: $e")
             null
         }
     }
+
 }

@@ -1,4 +1,4 @@
-package com.example.josephwanis.reportingsystem.ui.activities
+package com.example.josephwanis.reportingsystem.ui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -12,23 +12,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.models.User
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
-import com.example.josephwanis.reportingsystem.data.remote.firebase.FirestoreManager
+import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
 import com.example.josephwanis.reportingsystem.data.viewmodels.BlockedUsersViewModel
 import com.example.josephwanis.reportingsystem.ui.theme.ReportingSystemTheme
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun BlockedUsersActivity(blockedUsersViewModel: BlockedUsersViewModel, userId: String) {
+fun BlockedUsersScreen(userId: String, navController: NavController) {
+    val firebaseAuth = FirebaseAuthManager
+    val userRepository = UserRepository(firebaseAuth)
+    val blockedUsersViewModel = BlockedUsersViewModel(userRepository) // Initialize the view model
+
+    // Observe the blocked users for the current user
     val blockedUsers by blockedUsersViewModel.blockedUsers.observeAsState(emptyList())
     val loadingState by blockedUsersViewModel.loadingState.observeAsState(false)
     val errorState by blockedUsersViewModel.errorState.observeAsState()
-
 
     ReportingSystemTheme {
         Scaffold(
@@ -51,34 +54,22 @@ fun BlockedUsersActivity(blockedUsersViewModel: BlockedUsersViewModel, userId: S
                         Text(text = errorState!!, style = MaterialTheme.typography.bodyMedium)
                     }
                 } else {
-                    // Get the current user ID from FirebaseAuthManager
-                    val currentUserId = FirebaseAuthManager.getCurrentUserId()
-
-                    // Fetch the current user's model from the database using FirestoreManager
-                    var currentUser by remember(currentUserId) { mutableStateOf<User?>(null) }
-                    LaunchedEffect(currentUserId) {
-                        currentUserId?.let { uid ->
-                            val userMap = FirestoreManager.getDocument("users", uid)
-                            userMap?.let {
-                                currentUser = User.fromMap(it)
-                            }
-                        }
-                    }
-
                     // Display the list of blocked users
-                    currentUser?.let { user ->
-                        BlockedUsersList(blockedUsers, blockedUsersViewModel, user)
-                    }
+                    BlockedUsersList(blockedUsers, blockedUsersViewModel, userId)
                 }
             }
         )
+    }
+
+    // Fetch the blocked users for the current user
+    LaunchedEffect(userId) {
+        blockedUsersViewModel.getBlockedUsers(userId)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlockedUsersTopAppBar() {
-
     val topAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
         containerColor = MaterialTheme.colorScheme.surface,
         scrolledContainerColor = MaterialTheme.colorScheme.surface,
@@ -94,20 +85,20 @@ fun BlockedUsersTopAppBar() {
 }
 
 @Composable
-fun BlockedUsersList(blockedUsers: List<User>, blockedUsersViewModel: BlockedUsersViewModel, currentUser: User) {
+fun BlockedUsersList(blockedUsers: List<User>, blockedUsersViewModel: BlockedUsersViewModel, userId: String) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp)
     ) {
         items(blockedUsers) { blockedUser ->
-            BlockedUserItem(blockedUser, blockedUsersViewModel, currentUser)
+            BlockedUserItem(blockedUser, blockedUsersViewModel, userId)
             Divider()
         }
     }
 }
 
 @Composable
-fun BlockedUserItem(blockedUser: User, blockedUsersViewModel: BlockedUsersViewModel, blockingUser: User) {
+fun BlockedUserItem(blockedUser: User, blockedUsersViewModel: BlockedUsersViewModel, userId: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -120,7 +111,7 @@ fun BlockedUserItem(blockedUser: User, blockedUsersViewModel: BlockedUsersViewMo
 
         Button(
             onClick = {
-                blockedUsersViewModel.unblockUser(blockingUser.userId, blockedUser.userId)
+                blockedUsersViewModel.unblockUser(userId, blockedUser.userId)
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.error,

@@ -1,6 +1,12 @@
-package com.example.josephwanis.reportingsystem.ui.composables
+package com.example.josephwanis.reportingsystem.ui.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -8,8 +14,13 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,11 +28,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.josephwanis.reportingsystem.R
+import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
+import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
 import com.example.josephwanis.reportingsystem.data.viewmodels.UserProfileViewModel
+import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
 
 @Composable
-fun UserProfileScreen(userProfileViewModel: UserProfileViewModel) {
+fun UserProfileScreen(navController: NavController, userId: String) {
+
+    val firebaseAuth = FirebaseAuthManager
+    val userRepository = UserRepository(firebaseAuth)
+    val userProfileViewModel = UserProfileViewModel(userRepository)
     var displayNameState by remember { mutableStateOf("") }
 
     // Observe the userProfile LiveData
@@ -32,6 +52,11 @@ fun UserProfileScreen(userProfileViewModel: UserProfileViewModel) {
 
     // Observe the errorMessage LiveData to display error message
     val errorMessage by userProfileViewModel.errorMessage.observeAsState()
+
+    // Call the getUserProfile function to populate the initial display name
+    LaunchedEffect(Unit) {
+        userProfileViewModel.getUserProfile(userId)
+    }
 
     Column(
         modifier = Modifier
@@ -100,11 +125,17 @@ fun UserProfileScreen(userProfileViewModel: UserProfileViewModel) {
         // Display success message
         if (updateSuccess == true) {
             Text(text = stringResource(id = R.string.profile_updated))
+
+            // Clear the success message after displaying it
+            userProfileViewModel.clearErrorMessage()
         }
 
         // Display error message
         if (!errorMessage.isNullOrBlank()) {
             Text(text = errorMessage!!)
+
+            // Clear the error message after displaying it
+            userProfileViewModel.clearErrorMessage()
         }
     }
 }

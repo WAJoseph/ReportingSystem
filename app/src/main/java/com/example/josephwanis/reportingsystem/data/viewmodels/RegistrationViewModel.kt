@@ -4,32 +4,55 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.josephwanis.reportingsystem.data.models.User
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.coroutines.launch
+
+sealed class RegistrationResult {
+    object Loading : RegistrationResult()
+    data class Success(val user: User) : RegistrationResult()
+    data class Error(val error: String) : RegistrationResult()
+}
 
 class RegistrationViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    private val _registrationSuccess = MutableLiveData<Boolean>()
-    val registrationSuccess: LiveData<Boolean>
-        get() = _registrationSuccess
+    private val _registrationResult = MutableLiveData<RegistrationResult>()
+    val registrationResult: LiveData<RegistrationResult>
+        get() = _registrationResult
 
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String>
-        get() = _errorMessage
 
-    fun registerUser(email: String, password: String) {
+    fun registerUser(email: String, password: String, displayName: String) {
         viewModelScope.launch {
-            val user = userRepository.registerUser(email, password)
-            if (user != null) {
-                _registrationSuccess.value = true
-            } else {
-                _errorMessage.value = "Registration failed. Please try again later."
+            _registrationResult.value = RegistrationResult.Loading
+            try {
+                val user = userRepository.registerUser(email, password, displayName)
+
+                if (user != null) {
+                    _registrationResult.value = RegistrationResult.Success(user)
+                } else {
+                    _registrationResult.value = RegistrationResult.Error("Registration failed.")
+                }
+
+            } catch (e: Exception) {
+                _registrationResult.value = when (e) {
+                    is FirebaseAuthUserCollisionException -> {
+                        RegistrationResult.Error("Email is already registered. Please use a different email.")
+                    }
+                    is FirebaseNetworkException -> {
+                        RegistrationResult.Error("Network error. Please check your internet connection and try again.")
+                    }
+                    else -> {
+                        RegistrationResult.Error("An unexpected error occurred during registration. Please try again later.")
+                    }
+                }
             }
         }
     }
 
     // Optional: Function to clear error message when the error is handled in the view
     fun clearErrorMessage() {
-        _errorMessage.value = null
+        _registrationResult.value = null
     }
 }
