@@ -4,6 +4,7 @@ import ChatListScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,6 +15,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.josephwanis.reportingsystem.data.viewmodels.AppAction
+import com.example.josephwanis.reportingsystem.data.viewmodels.AppViewModel
 import com.example.josephwanis.reportingsystem.ui.screens.*
 import com.example.josephwanis.reportingsystem.ui.theme.ReportingSystemTheme
 import com.google.firebase.FirebaseApp
@@ -24,6 +27,8 @@ class MainActivity : ComponentActivity() {
 
         // Initialize Firebase here
         FirebaseApp.initializeApp(this)
+
+        val appViewModel: AppViewModel by viewModels()
 
         setContent {
             ReportingSystemTheme {
@@ -36,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     // Pass the NavController to the NavHost
-                    ReportingSystemNavHost(navController)
+                    ReportingSystemNavHost(navController, appViewModel)
                 }
             }
         }
@@ -44,13 +49,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ReportingSystemNavHost(navController: NavHostController) {
+fun ReportingSystemNavHost(navController: NavHostController, appViewModel: AppViewModel) {
     NavHost(navController, startDestination = "login") {
         composable("login") {
-            LoginScreen(navController)
+            LoginScreen(navController, appViewModel)
         }
         composable("registration") {
-            RegistrationScreen(navController)
+            RegistrationScreen(navController, appViewModel)
         }
         composable("chatList/{userId}/{isKnown}") {
             // Retrieve the userId argument from the previous screen

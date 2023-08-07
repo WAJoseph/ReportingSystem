@@ -1,5 +1,6 @@
 package com.example.josephwanis.reportingsystem.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,8 +16,11 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -31,19 +35,23 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.example.josephwanis.reportingsystem.data.viewmodels.AppViewModel
 import com.example.josephwanis.reportingsystem.data.viewmodels.RegistrationResult
 import com.example.josephwanis.reportingsystem.data.viewmodels.RegistrationViewModel
 import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreen( navController: NavController) {
+fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewModel) {
 
     val firebaseAuth = FirebaseAuthManager
     val userRepository = UserRepository(firebaseAuth)
-    val registrationViewModel = RegistrationViewModel(userRepository)
+    val registrationViewModel = RegistrationViewModel(userRepository, appViewModel)
 
     val displayNameState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
@@ -52,14 +60,16 @@ fun RegistrationScreen( navController: NavController) {
     // Observe the registrationResult LiveData
     val registrationResult by registrationViewModel.registrationResult.observeAsState()
 
-    Column(
+    Scaffold(
+        topBar = { TopAppBar(title = { Text(stringResource(id = R.string.register_title)) }) }
+    ) { Column(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(120.dp))
 
         // Display name Text Field
         IconTextField(
@@ -173,11 +183,6 @@ fun RegistrationScreen( navController: NavController) {
 
         // Display the registration result
         when (val result = registrationResult) {
-
-            is RegistrationResult.Error -> {
-                // Handle the case when registrationResult is false (registration failed)
-                Text(text = result.error)
-            }
             is RegistrationResult.Loading -> {
                 // Handle the case when registrationResult is null
                 CircularProgressIndicator()
@@ -186,13 +191,16 @@ fun RegistrationScreen( navController: NavController) {
                 val userId = result.user.userId
                 val isKnown = result.user.isKnown
                 navController.navigate("chatList/$userId/$isKnown"){
-                    launchSingleTop = true
                     popUpTo("login") {inclusive = true}
                 }
+            }
+            is RegistrationResult.Error -> {
+                // Handle the case when registrationResult is false (registration failed)
+                Text(text = result.error)
             }
             null -> {
                 Text(text = "Unexpected registration result")
             }
         }
-    }
+    }}
 }

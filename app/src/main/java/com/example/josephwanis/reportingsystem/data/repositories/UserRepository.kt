@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
@@ -22,8 +23,17 @@ class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
                 // Create a new user with the provided email, display name, and user ID from authentication
                 val newUser = User(user.uid, displayName, email, null, mutableSetOf(), mutableSetOf(), false)
 
-                // Add the user to Firestore
-                FirestoreManager.addUserRegistrationDocument("users", user.uid, newUser.toMap())
+                // Launch a separate coroutine for adding the user to Firestore
+                val addUserJob = launch {
+                    try {
+                        FirestoreManager.addUserRegistrationDocument("users", user.uid, newUser.toMap())
+                    } catch (e: Exception) {
+                        // Handle Firestore operation failure, if needed
+                    }
+                }
+
+                // Wait for the Firestore operation to complete
+                addUserJob.join()
 
                 // Return the new user if added successfully, otherwise return null
                 newUser

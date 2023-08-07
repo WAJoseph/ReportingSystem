@@ -9,6 +9,7 @@
     <string name="save">Save settings</string>
     <string name="profile_updated">Profile updated successfuly</string>
     <string name="login_title">Login</string>
+    <string name="register_title">Register</string>
     <string name="login_button">Login</string>
     <string name="register_button">register</string>
 </resources>

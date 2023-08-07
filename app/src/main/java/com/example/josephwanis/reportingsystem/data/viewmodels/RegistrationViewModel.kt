@@ -16,7 +16,7 @@ sealed class RegistrationResult {
     data class Error(val error: String) : RegistrationResult()
 }
 
-class RegistrationViewModel(private val userRepository: UserRepository) : ViewModel() {
+class RegistrationViewModel(private val userRepository: UserRepository, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val _registrationResult = MutableLiveData<RegistrationResult>()
     val registrationResult: LiveData<RegistrationResult>
@@ -24,7 +24,12 @@ class RegistrationViewModel(private val userRepository: UserRepository) : ViewMo
 
 
     fun registerUser(email: String, password: String, displayName: String) {
-        viewModelScope.launch {
+
+
+        // Cancel the previous job for the RegistrationAction before starting a new one
+        appViewModel.cancelActionJob(AppAction.RegistrationAction)
+
+        val job = viewModelScope.launch {
             _registrationResult.value = RegistrationResult.Loading
             try {
                 val user = userRepository.registerUser(email, password, displayName)
@@ -49,6 +54,10 @@ class RegistrationViewModel(private val userRepository: UserRepository) : ViewMo
                 }
             }
         }
+
+        // Update the shared job with the new one
+        appViewModel.updateSharedJob(job)
+
     }
 
     // Optional: Function to clear error message when the error is handled in the view

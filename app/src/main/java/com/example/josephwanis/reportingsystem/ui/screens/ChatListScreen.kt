@@ -22,6 +22,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.data.models.ChatSession
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.repositories.ChatRepository
@@ -31,7 +32,7 @@ import com.example.josephwanis.reportingsystem.data.viewmodels.ChatListViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatListScreen(navController: NavController, userId: String, isKnownUser: Boolean) {
+fun ChatListScreen(navController: NavHostController, userId: String, isKnownUser: Boolean) {
 
     val chatRepository = ChatRepository()
 

@@ -14,14 +14,18 @@ sealed class LoginResult {
     data class Error(val error: String) : LoginResult()
 }
 
-class LoginViewModel(private val userRepository: UserRepository) : ViewModel() {
+class LoginViewModel(private val userRepository: UserRepository, private val appViewModel: AppViewModel) : ViewModel() {
 
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult>
         get() = _loginResult
 
     fun loginUser(email: String, password: String) {
-        viewModelScope.launch {
+
+        // Cancel the previous job for the LoginAction before starting a new one
+        appViewModel.cancelActionJob(AppAction.LoginAction)
+
+        val job = viewModelScope.launch {
             _loginResult.value = LoginResult.Loading
             try {
                 val user = userRepository.loginUser(email, password)
@@ -35,6 +39,10 @@ class LoginViewModel(private val userRepository: UserRepository) : ViewModel() {
                 _loginResult.value = LoginResult.Error("An error occurred during login: ${e.message}")
             }
         }
+
+        // Update the shared job with the new one
+        appViewModel.updateSharedJob(job)
+
     }
 
     // Optional: Function to clear error message when the error is handled in the view

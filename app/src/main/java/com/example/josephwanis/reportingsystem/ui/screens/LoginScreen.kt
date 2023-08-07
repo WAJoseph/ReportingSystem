@@ -34,9 +34,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.example.josephwanis.reportingsystem.data.viewmodels.AppViewModel
 import com.example.josephwanis.reportingsystem.data.viewmodels.LoginResult
 import com.example.josephwanis.reportingsystem.data.viewmodels.LoginViewModel
 import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
@@ -44,11 +46,11 @@ import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
 
     val firebaseAuth = FirebaseAuthManager
     val userRepository = UserRepository(firebaseAuth)
-    val loginViewModel = LoginViewModel(userRepository)
+    val loginViewModel = LoginViewModel(userRepository, appViewModel)
 
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
@@ -150,9 +152,9 @@ fun LoginScreen(navController: NavController) {
             // Register Button
             Button(
                 onClick = {
-                    navController.navigate("registration") {
-                        launchSingleTop = true
-                    }
+                   navController.navigate("registration")// {
+                     //  launchSingleTop = true
+                  //  }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -173,7 +175,6 @@ fun LoginScreen(navController: NavController) {
                     val isKnown = result.user.isKnown
                     // Navigate to chatList destination with userId as an argument
                     navController.navigate("chatList/$userId/$isKnown") {
-                        launchSingleTop = true
                         popUpTo("login") { inclusive = true } // Clear the back stack up to login screen
                     }
                 }

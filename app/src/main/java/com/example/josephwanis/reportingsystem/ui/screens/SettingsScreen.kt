@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
@@ -44,7 +45,7 @@ import com.example.josephwanis.reportingsystem.data.viewmodels.SettingsViewModel
 import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
 
 @Composable
-fun SettingsScreen(userId: String, navController: NavController) {
+fun SettingsScreen(userId: String, navController: NavHostController) {
     val userRepository = UserRepository(FirebaseAuthManager) // Instantiate UserRepository
 
     val settingsViewModel = SettingsViewModel(userRepository)

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
@@ -37,7 +38,7 @@ import com.example.josephwanis.reportingsystem.data.viewmodels.UserProfileViewMo
 import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
 
 @Composable
-fun UserProfileScreen(navController: NavController, userId: String) {
+fun UserProfileScreen(navController: NavHostController, userId: String) {
 
     val firebaseAuth = FirebaseAuthManager
     val userRepository = UserRepository(firebaseAuth)
