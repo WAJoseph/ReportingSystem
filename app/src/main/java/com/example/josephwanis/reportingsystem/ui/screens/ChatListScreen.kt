@@ -56,14 +56,19 @@ fun ChatListScreen(navController: NavHostController, userId: String, isKnownUser
                 // Add icons for UserProfile and Settings
                 IconButton(
                     onClick = {
-                        navController.navigate("userProfile")
+                        navController.navigate("userProfile/$userId"){
+                            launchSingleTop = true
+                        }
+
                     }
                 ) {
                     Icon(Icons.Default.Person, contentDescription = "User Profile")
                 }
                 IconButton(
                     onClick = {
-                        navController.navigate("settings")
+                        navController.navigate("settings/$userId"){
+                            launchSingleTop = true
+                        }
                     }
                 ) {
                     Icon(Icons.Default.Settings, contentDescription = "Settings")

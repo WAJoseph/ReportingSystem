@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,7 +35,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
@@ -53,9 +53,9 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
     val userRepository = UserRepository(firebaseAuth)
     val registrationViewModel = RegistrationViewModel(userRepository, appViewModel)
 
-    val displayNameState = remember { mutableStateOf("") }
-    val emailState = remember { mutableStateOf("") }
-    val passwordState = remember { mutableStateOf("") }
+    var displayNameState by remember { mutableStateOf("") }
+    var emailState by remember { mutableStateOf("") }
+    var passwordState by remember { mutableStateOf("") }
 
     // Observe the registrationResult LiveData
     val registrationResult by registrationViewModel.registrationResult.observeAsState()
@@ -77,8 +77,8 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
             placeholder = stringResource(id = R.string.display_name),
             textField = {
                 BasicTextField(
-                    value = displayNameState.value,
-                    onValueChange = { displayNameState.value = it },
+                    value = displayNameState,
+                    onValueChange = { displayNameState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Text
@@ -90,7 +90,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
                         .height(56.dp)
                         .padding(horizontal = 8.dp),
                     decorationBox = @Composable { innerTextField ->
-                        if (displayNameState.value.isEmpty()) {
+                        if (displayNameState.isEmpty()) {
                             Text(stringResource(id = R.string.display_name), color = Color.Gray)
                         } else {
                             innerTextField()
@@ -108,8 +108,8 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
             placeholder = stringResource(id = R.string.email),
             textField = {
                 BasicTextField(
-                    value = emailState.value,
-                    onValueChange = { emailState.value = it },
+                    value = emailState,
+                    onValueChange = { emailState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Email
@@ -121,7 +121,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
                         .height(56.dp)
                         .padding(horizontal = 8.dp),
                     decorationBox = @Composable { innerTextField ->
-                        if (emailState.value.isEmpty()) {
+                        if (emailState.isEmpty()) {
                             Text(stringResource(id = R.string.email), color = Color.Gray)
                         } else {
                             innerTextField()
@@ -139,8 +139,8 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
             placeholder = stringResource(id = R.string.password),
             textField = {
                 BasicTextField(
-                    value = passwordState.value,
-                    onValueChange = { passwordState.value = it },
+                    value = passwordState,
+                    onValueChange = { passwordState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done,
                         keyboardType = KeyboardType.Password
@@ -153,7 +153,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
                         .height(56.dp)
                         .padding(horizontal = 8.dp),
                     decorationBox = @Composable { innerTextField ->
-                        if (passwordState.value.isEmpty()) {
+                        if (passwordState.isEmpty()) {
                             Text(stringResource(id = R.string.password), color = Color.Gray)
                         } else {
                             innerTextField()
@@ -168,9 +168,9 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
         // Register Button
         Button(
             onClick = {
-                val email = emailState.value
-                val password = passwordState.value
-                val displayName = displayNameState.value
+                val email = emailState
+                val password = passwordState
+                val displayName = displayNameState
                 // call the registerUser function in RegistrationViewModel passing the email, password, and display name
                 registrationViewModel.registerUser(email, password, displayName)
             },
@@ -191,6 +191,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
                 val userId = result.user.userId
                 val isKnown = result.user.isKnown
                 navController.navigate("chatList/$userId/$isKnown"){
+                    launchSingleTop = true
                     popUpTo("login") {inclusive = true}
                 }
             }

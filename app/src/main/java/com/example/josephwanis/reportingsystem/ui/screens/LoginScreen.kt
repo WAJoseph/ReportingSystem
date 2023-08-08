@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -32,8 +33,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
@@ -52,8 +51,8 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
     val userRepository = UserRepository(firebaseAuth)
     val loginViewModel = LoginViewModel(userRepository, appViewModel)
 
-    val emailState = remember { mutableStateOf("") }
-    val passwordState = remember { mutableStateOf("") }
+    var emailState by remember { mutableStateOf("") }
+    var passwordState by remember { mutableStateOf("") }
 
     // Observe the loginResult LiveData
     val loginResult by loginViewModel.loginResult.observeAsState()
@@ -75,8 +74,8 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                 placeholder = stringResource(id = R.string.email),
                 textField = {
                     BasicTextField(
-                        value = emailState.value,
-                        onValueChange = { emailState.value = it },
+                        value = emailState,
+                        onValueChange = { emailState = it },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next,
                             keyboardType = KeyboardType.Email
@@ -88,7 +87,7 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                             .height(56.dp)
                             .padding(horizontal = 8.dp),
                         decorationBox = @Composable { innerTextField ->
-                            if (emailState.value.isEmpty()) {
+                            if (emailState.isEmpty()) {
                                 Text(stringResource(id = R.string.email), color = Color.Gray)
                             } else {
                                 innerTextField()
@@ -106,8 +105,8 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                 placeholder = stringResource(id = R.string.password),
                 textField = {
                     BasicTextField(
-                        value = passwordState.value,
-                        onValueChange = { passwordState.value = it },
+                        value = passwordState,
+                        onValueChange = { passwordState = it },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done,
                             keyboardType = KeyboardType.Password
@@ -120,7 +119,7 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                             .height(56.dp)
                             .padding(horizontal = 8.dp),
                         decorationBox = @Composable { innerTextField ->
-                            if (passwordState.value.isEmpty()) {
+                            if (passwordState.isEmpty()) {
                                 Text(stringResource(id = R.string.password), color = Color.Gray)
                             } else {
                                 innerTextField()
@@ -135,8 +134,8 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
             // Login Button
             Button(
                 onClick = {
-                    val email = emailState.value
-                    val password = passwordState.value
+                    val email = emailState
+                    val password = passwordState
                     // Call the loginUser function in LoginViewModel passing the email and password
                     loginViewModel.loginUser(email, password)
                 },
@@ -175,6 +174,7 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                     val isKnown = result.user.isKnown
                     // Navigate to chatList destination with userId as an argument
                     navController.navigate("chatList/$userId/$isKnown") {
+                        launchSingleTop = true
                         popUpTo("login") { inclusive = true } // Clear the back stack up to login screen
                     }
                 }

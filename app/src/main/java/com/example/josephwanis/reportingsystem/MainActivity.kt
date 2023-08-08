@@ -71,21 +71,21 @@ fun ReportingSystemNavHost(navController: NavHostController, appViewModel: AppVi
             val chatSessionId = backStackEntry.arguments?.getString("chatSessionId") ?: ""
             ChatScreen(chatSessionId, navController)
         }
-        composable("blockedUsers") {
+        composable("blockedUsers/{userId}") {
             // Retrieve the userId argument from the previous screen
             val userId = it.arguments?.getString("userId")
             if (userId != null) {
                 BlockedUsersScreen(userId, navController)
             }
         }
-        composable("userProfile") {
+        composable("userProfile/{userId}") {
             // Retrieve the userId argument from the previous screen
             val userId = it.arguments?.getString("userId")
             if (userId != null) {
                 UserProfileScreen(navController,userId)
             }
         }
-        composable("settings") {
+        composable("settings/{userId}") {
             // Retrieve the userId argument from the previous screen
             val userId = it.arguments?.getString("userId")
             if (userId != null) {
