@@ -97,8 +97,10 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
                     BasicTextField(
                         value = it,
                         onValueChange = {
-                            displayNameState = it
-                            settingsViewModel.onDisplayNameChange(it.text) // Update the view model's displayNameState
+                            if (it.text.length <= 10) {
+                                displayNameState = it
+                                settingsViewModel.onDisplayNameChange(it.text) // Update the view model's displayNameState
+                            }
                         },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next,
@@ -133,8 +135,10 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
                     BasicTextField(
                         value = it,
                         onValueChange = {
-                            emailState = it
-                            settingsViewModel.onEmailChange(it.text) // Update the view model's emailState
+                            if(it.text.length <= 64 ){
+                                emailState = it
+                                settingsViewModel.onEmailChange(it.text) // Update the view model's emailState
+                            }
                         },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next,
@@ -169,8 +173,10 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
                     BasicTextField(
                         value = it,
                         onValueChange = {
-                            passwordState = it
-                            settingsViewModel.onPasswordChange(it.text) // Update the view model's passwordState
+                            if(it.text.length <= 64 ) {
+                                passwordState = it
+                                settingsViewModel.onPasswordChange(it.text) // Update the view model's passwordState
+                            }
                         },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done,

@@ -87,5 +87,26 @@ object FirestoreManager {
             null
         }
     }
+    suspend fun getDocumentJustForTesting(collectionName: String, sessionId: String): Map<String, Any>? {
+        return try {
+            val query = firestore.collection(collectionName)
+                .whereEqualTo("sessionId", sessionId)
+                .get()
+                .await()
 
+            val documents = query.documents
+            if (documents.isNotEmpty()) {
+                val document = documents.first()
+                val data = document.data
+                data
+            } else {
+                Log.d("FirestoreManager", "getDocument: Document not found or null")
+                null
+            }
+        } catch (e: Exception) {
+            // Print the exception for debugging purposes
+            Log.e("FirestoreManager", "Error retrieving document: $e")
+            null
+        }
+    }
 }

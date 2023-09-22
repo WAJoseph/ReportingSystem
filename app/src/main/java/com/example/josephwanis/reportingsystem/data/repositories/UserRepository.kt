@@ -15,13 +15,19 @@ import kotlinx.coroutines.withContext
 
 class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
 
+
+    // Function to fetch the user profile for a specific user
+    suspend fun getUserProfile(userId: String): User? {
+        return FirestoreManager.getDocument("users", userId)?.let { User.fromMap(it.toMap()) }
+    }
+
     // Function to handle user registration using Firebase Authentication
-    suspend fun registerUser(email: String, password: String, displayName: String): User {
+    suspend fun registerUser(email: String, password: String, displayName: String, isKnownUser: Boolean): User {
         return withContext(Dispatchers.IO) {
             try {
                 val user = firebaseAuthManager.registerUserWithEmailAndPassword(email, password)
                 // Create a new user with the provided email, display name, and user ID from authentication
-                val newUser = User(user.uid, displayName, email, null, mutableSetOf(), mutableSetOf(), false)
+                val newUser = User(user.uid, displayName, email, null, mutableSetOf(), mutableSetOf(), isKnownUser)
 
                 // Launch a separate coroutine for adding the user to Firestore
                 val addUserJob = launch {
@@ -55,6 +61,30 @@ class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
         }
     }
 
+    suspend fun getAllKnownUsersExceptCurrentUser(currentUserUid: String): List<User> {
+        val users = FirestoreManager.getCollection("users").get().await()
+        return users.documents.mapNotNull { document ->
+            val user = document.data?.let { User.fromMap(it) }
+            if (user != null && user.userId != currentUserUid && user.isKnown) {
+                user
+            } else {
+                null
+            }
+        }
+    }
+
+
+    suspend fun getAllUsersExceptCurrentUser(currentUserUid: String): List<User> {
+        val users = FirestoreManager.getCollection("users").get().await()
+        return users.documents.mapNotNull { document ->
+            val user = document.data?.let { User.fromMap(it) }
+            if (user != null && user.userId != currentUserUid) {
+                user
+            } else {
+                null
+            }
+        }
+    }
 
     // Function to handle login using Firebase Authentication
     suspend fun loginUser(email: String, password: String): User? {
@@ -163,11 +193,6 @@ class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
         }
 
         return false
-    }
-
-    // Function to fetch the user profile for a specific user
-    suspend fun getUserProfile(userId: String): User? {
-        return FirestoreManager.getDocument("users", userId)?.let { User.fromMap(it.toMap()) }
     }
 
     // Function to fetch blocked users for a specific user

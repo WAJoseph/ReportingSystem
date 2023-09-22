@@ -5,8 +5,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.josephwanis.reportingsystem.data.models.Message
+import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.repositories.ChatRepository
+import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
 
@@ -39,9 +43,15 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
     fun sendMessage(sessionId: String, senderId: String, message: String) {
         viewModelScope.launch {
             val success = chatRepository.sendMessage(sessionId, senderId, message)
+            if (success) {
+                // Fetch all messages from chat session
+                val messages = chatRepository.getAllMessagesForChatSession(sessionId)
+                _chatMessages.value = messages
+            }
             _sendMessageSuccess.value = success
         }
     }
+
 
     // Optional: Function to clear error message when the error is handled in the view
     fun clearErrorMessage() {

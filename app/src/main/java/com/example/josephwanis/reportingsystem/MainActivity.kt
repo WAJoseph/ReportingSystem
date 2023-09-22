@@ -1,6 +1,5 @@
 package com.example.josephwanis.reportingsystem
 
-import ChatListScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,9 +14,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.josephwanis.reportingsystem.data.viewmodels.AppAction
 import com.example.josephwanis.reportingsystem.data.viewmodels.AppViewModel
-import com.example.josephwanis.reportingsystem.ui.screens.*
+import com.example.josephwanis.reportingsystem.ui.screens.BlockedUsersScreen
+import com.example.josephwanis.reportingsystem.ui.screens.ChatListScreen
+import com.example.josephwanis.reportingsystem.ui.screens.ChatScreen
+import com.example.josephwanis.reportingsystem.ui.screens.LoginScreen
+import com.example.josephwanis.reportingsystem.ui.screens.RegistrationScreen
+import com.example.josephwanis.reportingsystem.ui.screens.SettingsScreen
+import com.example.josephwanis.reportingsystem.ui.screens.UserProfileScreen
 import com.example.josephwanis.reportingsystem.ui.theme.ReportingSystemTheme
 import com.google.firebase.FirebaseApp
 
@@ -57,37 +61,40 @@ fun ReportingSystemNavHost(navController: NavHostController, appViewModel: AppVi
         composable("registration") {
             RegistrationScreen(navController, appViewModel)
         }
-        composable("chatList/{userId}/{isKnown}") {
+        composable("chatList/{userId}/{isKnown}") { backStackEntry->
             // Retrieve the userId argument from the previous screen
-            val userId = it.arguments?.getString("userId")
-            val isKnown = it.arguments?.getBoolean("isKnown")
+            val userId = backStackEntry.arguments?.getString("userId")
+            val isKnown = backStackEntry.arguments?.getBoolean("isKnown")
             if (userId != null && isKnown != null) {
                     ChatListScreen(navController, userId, isKnown)
                 }
 
         }
-        composable("chat/{chatSessionId}") { backStackEntry ->
+        composable("chat/{chatSessionId}/{userId}") {backStackEntry->
             // Retrieve the chatSessionId argument from the previous screen
             val chatSessionId = backStackEntry.arguments?.getString("chatSessionId") ?: ""
-            ChatScreen(chatSessionId, navController)
+            val userId = backStackEntry.arguments?.getString("userId")
+            if (userId != null) {
+                ChatScreen(navController, chatSessionId, userId )
+            }
         }
-        composable("blockedUsers/{userId}") {
+        composable("blockedUsers/{userId}") {backStackEntry->
             // Retrieve the userId argument from the previous screen
-            val userId = it.arguments?.getString("userId")
+            val userId = backStackEntry.arguments?.getString("userId")
             if (userId != null) {
                 BlockedUsersScreen(userId, navController)
             }
         }
-        composable("userProfile/{userId}") {
+        composable("userProfile/{userId}") {backStackEntry->
             // Retrieve the userId argument from the previous screen
-            val userId = it.arguments?.getString("userId")
+            val userId = backStackEntry.arguments?.getString("userId")
             if (userId != null) {
                 UserProfileScreen(navController,userId)
             }
         }
-        composable("settings/{userId}") {
+        composable("settings/{userId}") {backStackEntry->
             // Retrieve the userId argument from the previous screen
-            val userId = it.arguments?.getString("userId")
+            val userId = backStackEntry.arguments?.getString("userId")
             if (userId != null) {
                 SettingsScreen(userId, navController)
             }

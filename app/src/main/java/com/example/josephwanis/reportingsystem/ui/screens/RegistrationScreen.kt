@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -38,10 +39,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
+import com.example.josephwanis.reportingsystem.data.repositories.ChatRepository
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
 import com.example.josephwanis.reportingsystem.data.viewmodels.AppViewModel
 import com.example.josephwanis.reportingsystem.data.viewmodels.RegistrationResult
 import com.example.josephwanis.reportingsystem.data.viewmodels.RegistrationViewModel
+import com.example.josephwanis.reportingsystem.ui.composables.CoolRadioButtonGroup
 import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -51,11 +54,13 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
 
     val firebaseAuth = FirebaseAuthManager
     val userRepository = UserRepository(firebaseAuth)
-    val registrationViewModel = RegistrationViewModel(userRepository, appViewModel)
+    val chatRepository = ChatRepository(userRepository)
+    val registrationViewModel = RegistrationViewModel(userRepository,chatRepository ,appViewModel)
 
     var displayNameState by remember { mutableStateOf("") }
     var emailState by remember { mutableStateOf("") }
     var passwordState by remember { mutableStateOf("") }
+    var isKnownUser by remember { mutableStateOf(false) }
 
     // Observe the registrationResult LiveData
     val registrationResult by registrationViewModel.registrationResult.observeAsState()
@@ -78,7 +83,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
             textField = {
                 BasicTextField(
                     value = displayNameState,
-                    onValueChange = { displayNameState = it },
+                    onValueChange = { if (it.length <= 64)displayNameState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Text
@@ -109,7 +114,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
             textField = {
                 BasicTextField(
                     value = emailState,
-                    onValueChange = { emailState = it },
+                    onValueChange = { if (it.length <= 64)emailState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                         keyboardType = KeyboardType.Email
@@ -140,7 +145,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
             textField = {
                 BasicTextField(
                     value = passwordState,
-                    onValueChange = { passwordState = it },
+                    onValueChange = { if (it.length <= 64)passwordState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done,
                         keyboardType = KeyboardType.Password
@@ -165,6 +170,11 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        CoolRadioButtonGroup(
+            selectedOption = isKnownUser,
+            onOptionSelected = { isKnownUser = it }
+        )
+
         // Register Button
         Button(
             onClick = {
@@ -172,7 +182,7 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
                 val password = passwordState
                 val displayName = displayNameState
                 // call the registerUser function in RegistrationViewModel passing the email, password, and display name
-                registrationViewModel.registerUser(email, password, displayName)
+                registrationViewModel.registerUser(email, password, displayName, isKnownUser)
             },
             modifier = Modifier
                 .fillMaxWidth()

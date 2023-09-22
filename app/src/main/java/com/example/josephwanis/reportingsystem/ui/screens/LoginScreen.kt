@@ -1,6 +1,7 @@
 package com.example.josephwanis.reportingsystem.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,8 +27,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,10 +52,20 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
 
     val firebaseAuth = FirebaseAuthManager
     val userRepository = UserRepository(firebaseAuth)
-    val loginViewModel = LoginViewModel(userRepository, appViewModel)
+    val context = LocalContext.current
+    val loginViewModel = remember {
+        LoginViewModel(context, userRepository ,appViewModel)
+    }
+    val loginPreferences = loginViewModel.getLoginPreferences()
+
 
     var emailState by remember { mutableStateOf("") }
     var passwordState by remember { mutableStateOf("") }
+
+    if (loginPreferences.first != null && loginPreferences.second != null) {
+        emailState = loginPreferences.first!!
+        passwordState = loginPreferences.second!!
+    }
 
     // Observe the loginResult LiveData
     val loginResult by loginViewModel.loginResult.observeAsState()
@@ -64,7 +77,9 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxSize()
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier.height(160.dp))
 
@@ -75,7 +90,7 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                 textField = {
                     BasicTextField(
                         value = emailState,
-                        onValueChange = { emailState = it },
+                        onValueChange = { if (it.length <= 64) emailState = it },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next,
                             keyboardType = KeyboardType.Email
@@ -106,7 +121,7 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                 textField = {
                     BasicTextField(
                         value = passwordState,
-                        onValueChange = { passwordState = it },
+                        onValueChange = { if(it.length <= 64 ) passwordState = it },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done,
                             keyboardType = KeyboardType.Password
@@ -138,6 +153,7 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
                     val password = passwordState
                     // Call the loginUser function in LoginViewModel passing the email and password
                     loginViewModel.loginUser(email, password)
+                    loginViewModel.saveLoginPreferences(email, password)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

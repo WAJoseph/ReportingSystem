@@ -75,7 +75,7 @@ fun UserProfileScreen(navController: NavHostController, userId: String) {
             textField = {
                 BasicTextField(
                     value = displayNameState,
-                    onValueChange = { displayNameState = it },
+                    onValueChange = { if (it.length <= 64)displayNameState = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done,
                         keyboardType = KeyboardType.Text

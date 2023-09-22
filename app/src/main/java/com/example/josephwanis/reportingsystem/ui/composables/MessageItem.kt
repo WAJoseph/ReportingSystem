@@ -8,28 +8,34 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun MessageItem(message: String) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = Color.Gray,
-        modifier = Modifier.padding(4.dp)
+fun MessageItem(username: String, message: String) {
+    val gradient = Brush.linearGradient(
+        colors = listOf(MaterialTheme.colorScheme.primary,MaterialTheme.colorScheme.primary)
+    )
+    Column(
+        modifier = Modifier
+            .padding(10.dp)
+            .widthIn(max = 200.dp)
+            .background(gradient, shape = RoundedCornerShape(20.dp))
     ) {
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .widthIn(max = 200.dp)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            Text(
-                text = message,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = "$username:",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(10.dp)
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.padding(horizontal = 10.dp)
+        )
     }
 }
