@@ -28,8 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
@@ -43,7 +41,7 @@ fun UserProfileScreen(navController: NavHostController, userId: String) {
     val firebaseAuth = FirebaseAuthManager
     val userRepository = UserRepository(firebaseAuth)
     val userProfileViewModel = UserProfileViewModel(userRepository)
-    var displayNameState by remember { mutableStateOf("") }
+    val displayNameState = remember { mutableStateOf("") }
 
     // Observe the userProfile LiveData
     val userProfile by userProfileViewModel.userProfile.observeAsState()
@@ -72,29 +70,18 @@ fun UserProfileScreen(navController: NavHostController, userId: String) {
         IconTextField(
             icon = Icons.Default.Person,
             placeholder = stringResource(id = R.string.display_name),
-            textField = {
-                BasicTextField(
-                    value = displayNameState,
-                    onValueChange = { if (it.length <= 64)displayNameState = it },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Text
-                    ),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 8.dp),
-                    decorationBox = @Composable { innerTextField ->
-                        if (displayNameState.isEmpty()) {
-                            Text(stringResource(id = R.string.display_name), color = Color.Gray)
-                        } else {
-                            innerTextField()
-                        }
-                    }
-                )
-            }
+            text = displayNameState,
+            onValueChange = { if (it.length <= 64)displayNameState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -103,7 +90,7 @@ fun UserProfileScreen(navController: NavHostController, userId: String) {
         Button(
             onClick = {
                 // Get the updated display name from the text field
-                val updatedDisplayName = displayNameState.trim()
+                val updatedDisplayName = displayNameState.value.trim()
 
                 // Make sure the display name is not empty
                 if (updatedDisplayName.isNotEmpty()) {

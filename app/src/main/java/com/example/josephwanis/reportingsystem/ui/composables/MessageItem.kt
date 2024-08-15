@@ -21,7 +21,7 @@ fun MessageItem(username: String, message: String) {
     Column(
         modifier = Modifier
             .padding(10.dp)
-            .widthIn(max = 200.dp)
+            .widthIn(max = 319.dp)
             .background(gradient, shape = RoundedCornerShape(20.dp))
     ) {
         Text(
@@ -35,7 +35,9 @@ fun MessageItem(username: String, message: String) {
             text = message,
             color = MaterialTheme.colorScheme.onPrimary,
             fontWeight = FontWeight.Normal,
-            modifier = Modifier.padding(horizontal = 10.dp)
+            modifier = Modifier.padding(10.dp)
         )
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(text="")
     }
 }

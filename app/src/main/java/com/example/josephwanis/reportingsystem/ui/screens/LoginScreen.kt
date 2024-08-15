@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -26,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,12 +57,12 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
     val loginPreferences = loginViewModel.getLoginPreferences()
 
 
-    var emailState by remember { mutableStateOf("") }
-    var passwordState by remember { mutableStateOf("") }
+    val emailState = remember { mutableStateOf("") }
+    val passwordState = remember { mutableStateOf("") }
 
     if (loginPreferences.first != null && loginPreferences.second != null) {
-        emailState = loginPreferences.first!!
-        passwordState = loginPreferences.second!!
+        emailState.value = loginPreferences.first!!
+        passwordState.value = loginPreferences.second!!
     }
 
     // Observe the loginResult LiveData
@@ -87,30 +85,20 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
             IconTextField(
                 icon = Icons.Default.Email,
                 placeholder = stringResource(id = R.string.email),
-                textField = {
-                    BasicTextField(
-                        value = emailState,
-                        onValueChange = { if (it.length <= 64) emailState = it },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next,
-                            keyboardType = KeyboardType.Email
-                        ),
-                        singleLine = true,
-                        textStyle = typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(horizontal = 8.dp),
-                        decorationBox = @Composable { innerTextField ->
-                            if (emailState.isEmpty()) {
-                                Text(stringResource(id = R.string.email), color = Color.Gray)
-                            } else {
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
+                text = emailState,
+                onValueChange = { if (it.length <= 64) emailState.value = it },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                ),
+                singleLine = true,
+                textStyle = typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 8.dp)
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -118,30 +106,19 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
             IconTextField(
                 icon = Icons.Default.Lock,
                 placeholder = stringResource(id = R.string.password),
-                textField = {
-                    BasicTextField(
-                        value = passwordState,
-                        onValueChange = { if(it.length <= 64 ) passwordState = it },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done,
-                            keyboardType = KeyboardType.Password
-                        ),
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        textStyle = typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(horizontal = 8.dp),
-                        decorationBox = @Composable { innerTextField ->
-                            if (passwordState.isEmpty()) {
-                                Text(stringResource(id = R.string.password), color = Color.Gray)
-                            } else {
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
+                text = passwordState,
+                onValueChange = { if(it.length <= 64 ) passwordState.value = it },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Password
+                ),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                textStyle = typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 8.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -149,8 +126,8 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
             // Login Button
             Button(
                 onClick = {
-                    val email = emailState
-                    val password = passwordState
+                    val email = emailState.value
+                    val password = passwordState.value
                     // Call the loginUser function in LoginViewModel passing the email and password
                     loginViewModel.loginUser(email, password)
                     loginViewModel.saveLoginPreferences(email, password)
@@ -161,15 +138,15 @@ fun LoginScreen(navController: NavHostController, appViewModel: AppViewModel) {
             ) {
                 Text(text = stringResource(id = R.string.login_button))
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
 
             // Register Button
             Button(
                 onClick = {
-                   navController.navigate("registration")// {
-                     //  launchSingleTop = true
-                  //  }
+                    navController.navigate("registration")// {
+                    //  launchSingleTop = true
+                    //  }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

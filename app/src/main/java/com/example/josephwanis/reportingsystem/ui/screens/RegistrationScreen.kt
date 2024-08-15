@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -57,9 +56,10 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
     val chatRepository = ChatRepository(userRepository)
     val registrationViewModel = RegistrationViewModel(userRepository,chatRepository ,appViewModel)
 
-    var displayNameState by remember { mutableStateOf("") }
-    var emailState by remember { mutableStateOf("") }
-    var passwordState by remember { mutableStateOf("") }
+    val displayNameState = remember { mutableStateOf("") }
+    val emailState = remember { mutableStateOf("") }
+    val passwordState = remember { mutableStateOf("") }
+
     var isKnownUser by remember { mutableStateOf(false) }
 
     // Observe the registrationResult LiveData
@@ -80,30 +80,20 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
         IconTextField(
             icon = Icons.Default.Person,
             placeholder = stringResource(id = R.string.display_name),
-            textField = {
-                BasicTextField(
-                    value = displayNameState,
-                    onValueChange = { if (it.length <= 64)displayNameState = it },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next,
-                        keyboardType = KeyboardType.Text
-                    ),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 8.dp),
-                    decorationBox = @Composable { innerTextField ->
-                        if (displayNameState.isEmpty()) {
-                            Text(stringResource(id = R.string.display_name), color = Color.Gray)
-                        } else {
-                            innerTextField()
-                        }
-                    }
-                )
-            }
+            text = displayNameState,
+            onValueChange = { if (it.length <= 64)displayNameState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -111,61 +101,39 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
         IconTextField(
             icon = Icons.Default.Email,
             placeholder = stringResource(id = R.string.email),
-            textField = {
-                BasicTextField(
-                    value = emailState,
-                    onValueChange = { if (it.length <= 64)emailState = it },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Next,
-                        keyboardType = KeyboardType.Email
-                    ),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 8.dp),
-                    decorationBox = @Composable { innerTextField ->
-                        if (emailState.isEmpty()) {
-                            Text(stringResource(id = R.string.email), color = Color.Gray)
-                        } else {
-                            innerTextField()
-                        }
-                    }
-                )
-            }
+            text = emailState,
+            onValueChange = { if (it.length <= 64) emailState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Email
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Text field
+        // Password Text Field
         IconTextField(
             icon = Icons.Default.Lock,
             placeholder = stringResource(id = R.string.password),
-            textField = {
-                BasicTextField(
-                    value = passwordState,
-                    onValueChange = { if (it.length <= 64)passwordState = it },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Password
-                    ),
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 8.dp),
-                    decorationBox = @Composable { innerTextField ->
-                        if (passwordState.isEmpty()) {
-                            Text(stringResource(id = R.string.password), color = Color.Gray)
-                        } else {
-                            innerTextField()
-                        }
-                    }
-                )
-            }
+            text = passwordState,
+            onValueChange = { if(it.length <= 64 ) passwordState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Password
+            ),
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -178,9 +146,9 @@ fun RegistrationScreen(navController: NavHostController, appViewModel: AppViewMo
         // Register Button
         Button(
             onClick = {
-                val email = emailState
-                val password = passwordState
-                val displayName = displayNameState
+                val email = emailState.value
+                val password = passwordState.value
+                val displayName = displayNameState.value
                 // call the registerUser function in RegistrationViewModel passing the email, password, and display name
                 registrationViewModel.registerUser(email, password, displayName, isKnownUser)
             },

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
@@ -21,22 +20,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.josephwanis.reportingsystem.R
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
@@ -57,28 +51,9 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
     val errorMessage by settingsViewModel.errorMessage.observeAsState()
 
     // Use TextFieldValues to wrap the String values
-    var displayNameState by remember { mutableStateOf(settingsViewModel.displayNameState.value?.let {
-        TextFieldValue(
-            it
-        )
-    }) }
-    var emailState by remember { mutableStateOf(settingsViewModel.emailState.value?.let {
-        TextFieldValue(
-            it
-        )
-    }) }
-    var passwordState by remember { mutableStateOf(settingsViewModel.passwordState.value?.let {
-        TextFieldValue(
-            it
-        )
-    }) }
-
-    // Call the necessary functions to initialize the text fields
-    LaunchedEffect(Unit) {
-        displayNameState?.let { settingsViewModel.onDisplayNameChange(it.text) }
-        emailState?.let { settingsViewModel.onEmailChange(it.text) }
-        passwordState?.let { settingsViewModel.onPasswordChange(it.text) }
-    }
+    val displayNameState = remember { mutableStateOf("")}
+    val emailState = remember { mutableStateOf("")}
+    val passwordState = remember { mutableStateOf("")}
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -92,36 +67,18 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
         IconTextField(
             icon = Icons.Default.Person,
             placeholder = stringResource(id = R.string.display_name),
-            textField = {
-                displayNameState?.let {
-                    BasicTextField(
-                        value = it,
-                        onValueChange = {
-                            if (it.text.length <= 10) {
-                                displayNameState = it
-                                settingsViewModel.onDisplayNameChange(it.text) // Update the view model's displayNameState
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next,
-                            keyboardType = KeyboardType.Text
-                        ),
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(horizontal = 8.dp),
-                        decorationBox = @Composable { innerTextField ->
-                            if (displayNameState!!.text.isEmpty()) {
-                                Text(stringResource(id = R.string.display_name), color = Color.Gray)
-                            } else {
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
-            }
+            text = displayNameState,
+            onValueChange = { if (it.length <= 64)displayNameState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -130,75 +87,39 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
         IconTextField(
             icon = Icons.Default.Email,
             placeholder = stringResource(id = R.string.email),
-            textField = {
-                emailState?.let {
-                    BasicTextField(
-                        value = it,
-                        onValueChange = {
-                            if(it.text.length <= 64 ){
-                                emailState = it
-                                settingsViewModel.onEmailChange(it.text) // Update the view model's emailState
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Next,
-                            keyboardType = KeyboardType.Email
-                        ),
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(horizontal = 8.dp),
-                        decorationBox = @Composable { innerTextField ->
-                            if (emailState!!.text.isEmpty()) {
-                                Text(stringResource(id = R.string.email), color = Color.Gray)
-                            } else {
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
-            }
+            text = emailState,
+            onValueChange = { if (it.length <= 64) emailState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Email
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Text field
+        // Password Text Field
         IconTextField(
             icon = Icons.Default.Lock,
             placeholder = stringResource(id = R.string.password),
-            textField = {
-                passwordState?.let {
-                    BasicTextField(
-                        value = it,
-                        onValueChange = {
-                            if(it.text.length <= 64 ) {
-                                passwordState = it
-                                settingsViewModel.onPasswordChange(it.text) // Update the view model's passwordState
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done,
-                            keyboardType = KeyboardType.Password
-                        ),
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(horizontal = 8.dp),
-                        decorationBox = @Composable { innerTextField ->
-                            if (passwordState!!.text.isEmpty()) {
-                                Text(stringResource(id = R.string.password), color = Color.Gray)
-                            } else {
-                                innerTextField()
-                            }
-                        }
-                    )
-                }
-            }
+            text = passwordState,
+            onValueChange = { if(it.length <= 64 ) passwordState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Password
+            ),
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -206,7 +127,7 @@ fun SettingsScreen(userId: String, navController: NavHostController) {
         // Save Button
         Button(
             onClick = {
-                displayNameState?.let { settingsViewModel.updateUserProfile(userId, it.text, null) } // Replace `null` with the profile image URI if needed
+                displayNameState.let { settingsViewModel.updateUserProfile(userId, it.value, null) } // Replace `null` with the profile image URI if needed
             },
             modifier = Modifier
                 .fillMaxWidth()

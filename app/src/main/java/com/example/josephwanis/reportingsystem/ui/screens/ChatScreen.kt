@@ -2,6 +2,7 @@ package com.example.josephwanis.reportingsystem.ui.screens
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -33,7 +35,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.*
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -106,6 +111,19 @@ fun ChatScreen(navController: NavHostController, chatSessionId: String, userId: 
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
+                    .border(0.dp, Color.Transparent)
+                    .drawBehind {
+
+                        val strokeWidth = 1 * density
+                        val y = size.height - strokeWidth / 2
+
+                        drawLine(
+                            Color.LightGray,
+                            Offset(0f, y.toFloat()),
+                            Offset(size.width/2, y.toFloat()),
+                            strokeWidth
+                        )
+                    }
             ) {
                 TextField(
                     value = newMessageState.value,
@@ -114,6 +132,7 @@ fun ChatScreen(navController: NavHostController, chatSessionId: String, userId: 
                             newMessageState.value = newValue
                         }
                     },
+                    shape = RoundedCornerShape(30),
                     keyboardActions = KeyboardActions(
                         onDone = {
                             chatViewModel.sendMessage(chatSessionId, userId, newMessageState.value.text)
@@ -123,7 +142,7 @@ fun ChatScreen(navController: NavHostController, chatSessionId: String, userId: 
                     placeholder = { Text(text = "Type your message...", color = Color.Gray) },
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp)
+                        .padding(end = 8.dp).border(1.dp, Color.LightGray, shape = RoundedCornerShape(30))
                 )
 
                 Button(
