@@ -1,0 +1,168 @@
+package com.example.josephwanis.reportingsystem.ui.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.josephwanis.reportingsystem.R
+import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
+import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.example.josephwanis.reportingsystem.data.viewmodels.SettingsViewModel
+import com.example.josephwanis.reportingsystem.ui.composables.IconTextField
+
+@Composable
+fun SettingsScreen(userId: String, navController: NavHostController) {
+    val userRepository = UserRepository(FirebaseAuthManager) // Instantiate UserRepository
+
+    val settingsViewModel = SettingsViewModel(userRepository)
+
+    // Observe the updateSuccess LiveData to display success message
+    val updateSuccess by settingsViewModel.updateSuccess.observeAsState()
+
+    // Observe the errorMessage LiveData to display error message
+    val errorMessage by settingsViewModel.errorMessage.observeAsState()
+
+    // Use TextFieldValues to wrap the String values
+    val displayNameState = remember { mutableStateOf("")}
+    val emailState = remember { mutableStateOf("")}
+    val passwordState = remember { mutableStateOf("")}
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Display name Text Field
+        IconTextField(
+            icon = Icons.Default.Person,
+            placeholder = stringResource(id = R.string.display_name),
+            text = displayNameState,
+            onValueChange = { if (it.length <= 64)displayNameState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Email Text Field
+        IconTextField(
+            icon = Icons.Default.Email,
+            placeholder = stringResource(id = R.string.email),
+            text = emailState,
+            onValueChange = { if (it.length <= 64) emailState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Email
+            ),
+            singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Password Text Field
+        IconTextField(
+            icon = Icons.Default.Lock,
+            placeholder = stringResource(id = R.string.password),
+            text = passwordState,
+            onValueChange = { if(it.length <= 64 ) passwordState.value = it },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.Password
+            ),
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Save Button
+        Button(
+            onClick = {
+                displayNameState.let { settingsViewModel.updateUserProfile(userId, it.value, null) } // Replace `null` with the profile image URI if needed
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Text(text = stringResource(id = R.string.save))
+        }
+
+        // Display success message
+        if (updateSuccess == true) {
+            Text(text = stringResource(id = R.string.profile_updated))
+        }
+
+        // Display error message
+        if (!errorMessage.isNullOrBlank()) {
+            Text(text = errorMessage!!)
+        }
+
+        // Blocked Users Button
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                // Navigate to the Blocked Users screen with the necessary arguments
+                navController.navigate("blockedUsers/$userId")
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = Icons.Filled.Block, contentDescription = "Blocked Users")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = stringResource(id = R.string.blocked_users))
+            }
+        }
+
+    }
+}

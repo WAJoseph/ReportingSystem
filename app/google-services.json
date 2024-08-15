@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "37872526339",
+    "project_id": "reportingsystem-8a78c",
+    "storage_bucket": "reportingsystem-8a78c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37872526339:android:be3b1bc2f2408c67ad5a36",
+        "android_client_info": {
+          "package_name": "com.example.josephwanis.reportingsystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqS0e8JyiDzw9o9aVG_E2MQJ99WKIqh6w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
