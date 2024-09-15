@@ -149,10 +149,11 @@ fun ChatListItem(navController: NavController, chatSession: ChatSession, userId:
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Chat session ID: ${chatSession.sessionId}",
+                text = "Last Message: ${
+                    chatSession.lastMessage?.content ?: "No messages yet"
+                }",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary
-
             )
             Text(
                 text = "Participants: ${participants.value.joinToString(", ")}",
