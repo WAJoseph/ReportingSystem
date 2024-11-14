@@ -2,20 +2,33 @@ package com.example.josephwanis.reportingsystem.data.repositories
 
 import android.content.Context
 import android.util.Log
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.VolleyError
+import com.example.josephwanis.reportingsystem.data.models.Message
 import com.example.josephwanis.reportingsystem.data.network.VolleySingleton
 import org.json.JSONObject
 import kotlinx.coroutines.CompletableDeferred
 
 class ChatbotRepository(private val context: Context) {
 
-    suspend fun getResponseFromLlama3(prompt: String): String {
+    suspend fun getResponseFromLlama3(prompt: String, conversationHistory: List<Message>): String {
         val url = "http://10.0.2.2:11434/api/generate"
+
+        // Ensure the conversation history is formatted as plain text for Llama3
+        val historyText = conversationHistory.joinToString(separator = "\n") { message ->
+            "${message.senderUserId}: ${message.content}"
+        }
+
+        // Create the final prompt that includes history and the user's new question
+        val fullPrompt = "Please note, the following prompt is a history of conversations:\n\n" +
+                "$historyText\nuser: $prompt"
+
+        // Construct the JSON request payload
         val json = JSONObject().apply {
             put("model", "llama3")
-            put("prompt", prompt)
+            put("prompt", fullPrompt)
             put("output", "text")
             put("stream", false)
         }
@@ -26,8 +39,8 @@ class ChatbotRepository(private val context: Context) {
         // Start timing the request for performance insight
         val startTime = System.currentTimeMillis()
 
-        // Debug info to check initial conditions
-        Log.d("ChatbotRepository", "Sending request to URL: $url with data: $json")
+        // Debug info to verify the complete prompt structure before sending
+        Log.d("ChatbotRepository", "Full Prompt Sent to Llama3: $fullPrompt")
 
         val request = JsonObjectRequest(
             Request.Method.POST, url, json,
@@ -44,7 +57,7 @@ class ChatbotRepository(private val context: Context) {
                 val endTime = System.currentTimeMillis()
                 Log.e("ChatbotRepository", "Request failed in ${endTime - startTime}ms", error)
 
-                // Check if network is reachable
+                // Provide a user-friendly error message based on network response
                 val networkError = when {
                     error.networkResponse == null -> "Network unreachable or server not responding."
                     error.networkResponse.statusCode == 404 -> "Error 404: Endpoint not found at $url."
@@ -54,6 +67,13 @@ class ChatbotRepository(private val context: Context) {
 
                 deferred.complete("Connection was not successful: $networkError")
             }
+        )
+
+        // Configure retry policy for the request
+        request.retryPolicy = DefaultRetryPolicy(
+            180000, // Timeout in milliseconds (180 seconds)
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
 
         // Add the request to the Volley queue

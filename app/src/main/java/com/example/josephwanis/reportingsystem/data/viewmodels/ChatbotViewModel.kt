@@ -16,30 +16,44 @@ class ChatbotViewModel(private val context: Context) : ViewModel() {
     private val _messages = MutableLiveData<List<Message>>(emptyList())
     val messages: LiveData<List<Message>> get() = _messages
 
+    private val conversationHistory = mutableListOf<Message>()
+
     fun sendMessage(content: String, senderUserId: String) {
-        val timestamp = System.currentTimeMillis()
-        val userMessage = Message(
+        // Add user's message
+        val userMessage = createMessage(content, senderUserId)
+        addMessageToHistory(userMessage)
+
+        // Fetch the bot's response
+        viewModelScope.launch {
+            try {
+                val response = repository.getResponseFromLlama3(content, conversationHistory)
+                Log.d("ChatbotViewModel", "Response from Llama3: $response")
+
+                val botMessage = createMessage(response, "bot")
+                addMessageToHistory(botMessage)
+
+            } catch (e: Exception) {
+                Log.e("ChatbotViewModel", "Error retrieving response: ${e.message}")
+
+                // Handle failure by adding a bot error message
+                val errorMessage = createMessage("I'm sorry, there was an issue connecting to the server.", "bot")
+                addMessageToHistory(errorMessage)
+            }
+        }
+    }
+
+    private fun addMessageToHistory(message: Message) {
+        conversationHistory.add(message)
+        _messages.value = conversationHistory.toList()
+    }
+
+    private fun createMessage(content: String, senderUserId: String): Message {
+        return Message(
             messageId = generateMessageId(),
             senderUserId = senderUserId,
             content = content,
-            timestamp = timestamp
+            timestamp = System.currentTimeMillis()
         )
-
-        val currentMessages = _messages.value ?: emptyList()
-        _messages.value = currentMessages + userMessage
-
-        viewModelScope.launch {
-            val response = repository.getResponseFromLlama3(content)
-            Log.d("ChatbotViewModel", "Response from Llama3: $response")
-
-            val botMessage = Message(
-                messageId = generateMessageId(),
-                senderUserId = "bot",
-                content = response,
-                timestamp = System.currentTimeMillis()
-            )
-            _messages.value = _messages.value?.plus(botMessage)
-        }
     }
 
     private fun generateMessageId(): String {
