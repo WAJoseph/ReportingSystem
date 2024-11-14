@@ -10,11 +10,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.josephwanis.reportingsystem.data.viewmodels.AppViewModel
+import com.example.josephwanis.reportingsystem.data.viewmodels.ChatbotViewModel
+import com.example.josephwanis.reportingsystem.data.viewmodels.ChatbotViewModelFactory
+import com.example.josephwanis.reportingsystem.ui.screens.ChatbotScreen
 import com.example.josephwanis.reportingsystem.ui.screens.BlockedUsersScreen
 import com.example.josephwanis.reportingsystem.ui.screens.ChatListScreen
 import com.example.josephwanis.reportingsystem.ui.screens.ChatScreen
@@ -26,13 +30,20 @@ import com.example.josephwanis.reportingsystem.ui.theme.ReportingSystemTheme
 import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var chatbotViewModel: ChatbotViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val factory = ChatbotViewModelFactory(this)  // Pass the context here
+        chatbotViewModel = ViewModelProvider(this, factory)[ChatbotViewModel::class.java]
 
         // Initialize Firebase here
         FirebaseApp.initializeApp(this)
 
         val appViewModel: AppViewModel by viewModels()
+        val chatbotViewModel: ChatbotViewModel by viewModels()
 
         setContent {
             ReportingSystemTheme {
@@ -45,7 +56,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     // Pass the NavController to the NavHost
-                    ReportingSystemNavHost(navController, appViewModel)
+                    ReportingSystemNavHost(navController, appViewModel, chatbotViewModel)
                 }
             }
         }
@@ -53,7 +64,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ReportingSystemNavHost(navController: NavHostController, appViewModel: AppViewModel) {
+fun ReportingSystemNavHost(navController: NavHostController, appViewModel: AppViewModel, chatbotViewModel: ChatbotViewModel) {
     NavHost(navController, startDestination = "login") {
         composable("login") {
             LoginScreen(navController, appViewModel)
@@ -69,6 +80,12 @@ fun ReportingSystemNavHost(navController: NavHostController, appViewModel: AppVi
                     ChatListScreen(navController, userId, isKnown)
                 }
 
+        }
+        composable("chatbot/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            if (userId != null) {
+                ChatbotScreen(navController, chatbotViewModel, userId) // Pass userId to the ChatbotScreen
+            }
         }
         composable("chat/{chatSessionId}/{userId}") {backStackEntry->
             // Retrieve the chatSessionId argument from the previous screen

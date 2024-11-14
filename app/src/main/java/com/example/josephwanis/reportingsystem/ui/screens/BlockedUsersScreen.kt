@@ -71,19 +71,18 @@ fun BlockedUsersScreen(userId: String, navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlockedUsersTopAppBar() {
-    val topAppBarColors = TopAppBarDefaults.smallTopAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surface,
-        scrolledContainerColor = MaterialTheme.colorScheme.surface,
-        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-        titleContentColor = MaterialTheme.colorScheme.onSurface,
-        actionIconContentColor = MaterialTheme.colorScheme.onSurface
-    )
-
     TopAppBar(
         title = { Text(stringResource(R.string.blocked_users)) },
-        colors = topAppBarColors
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary, // Use your desired color
+            scrolledContainerColor = MaterialTheme.colorScheme.onPrimary, // Scrolled state color
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary, // Color for the navigation icon
+            titleContentColor = MaterialTheme.colorScheme.onPrimary, // Title color
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary // Action icon color
+        )
     )
 }
+
 
 @Composable
 fun BlockedUsersList(blockedUsers: List<User>, blockedUsersViewModel: BlockedUsersViewModel, userId: String) {
