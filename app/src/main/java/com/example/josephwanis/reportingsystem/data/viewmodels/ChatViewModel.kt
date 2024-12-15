@@ -65,41 +65,44 @@ class ChatViewModel(private val chatRepository: ChatRepository,
         }
     }
 
+    // In ChatViewModel
     fun analyzeChatMessages() {
-        _isLoading.value = true // Start loading
+        // Set loading to true on the main thread
+        _isLoading.postValue(true)
+
         viewModelScope.launch {
             try {
                 val messages = _chatMessages.value ?: emptyList()
                 if (messages.isEmpty()) {
-                    _analysisError.value = "No messages to analyze"
-                    _isLoading.value = false // Stop loading
+                    // Use postValue for LiveData updates from background threads
+                    _analysisError.postValue("No messages to analyze")
+                    _isLoading.postValue(false)
                     return@launch
                 }
 
                 val messageContents = messages.map { it.content }
-
-                // Ensure message contents are not empty
                 val validMessages = messageContents.filter { it.isNotBlank() }
+
                 if (validMessages.isEmpty()) {
-                    _analysisError.value = "No meaningful messages to analyze"
-                    _isLoading.value = false // Stop loading
+                    _analysisError.postValue("No meaningful messages to analyze")
+                    _isLoading.postValue(false)
                     return@launch
                 }
 
                 val result = analyticsBotRepository.analyzeMessagesForChart(validMessages)
 
-                // Ensure the result is not empty
                 if (result.isEmpty()) {
-                    _analysisError.value = "Unable to generate insights"
-                    _isLoading.value = false // Stop loading
+                    _analysisError.postValue("Unable to generate insights")
+                    _isLoading.postValue(false)
                     return@launch
                 }
 
-                _analysisResult.value = result
-                _isLoading.value = false // Stop loading
+                // Use postValue to ensure thread-safety
+                _analysisResult.postValue(result)
+                _isLoading.postValue(false)
             } catch (e: Exception) {
-                _analysisError.value = "Failed to analyze messages: ${e.localizedMessage}"
-                _isLoading.value = false // Stop loading
+                _analysisError.postValue("Failed to analyze messages: ${e.localizedMessage}")
+                _isLoading.postValue(false)
             }
         }
     }

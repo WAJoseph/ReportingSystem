@@ -111,7 +111,7 @@ private fun AnalysisContent(analysisResult: Map<String, Float>) {
                 .fillMaxWidth()
                 .height(250.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.surfaceDim,
                     shape = MaterialTheme.shapes.medium
                 )
                 .padding(16.dp)
