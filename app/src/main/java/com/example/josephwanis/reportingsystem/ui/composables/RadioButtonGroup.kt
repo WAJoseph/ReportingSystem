@@ -58,7 +58,7 @@ fun CoolRadioButton(
     Box(
         modifier = Modifier
             .clickable { onSelected() }
-            .padding(14.dp)
+            .padding(10.dp)
             .background(
                 shape = CircleShape ,
                 color = if (isSelected) Color(0xFF5165D6) else Color.Transparent
@@ -73,7 +73,7 @@ fun CoolRadioButton(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = if (isSelected) Color.White else Color.Gray,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
 
                 Text(
@@ -81,7 +81,7 @@ fun CoolRadioButton(
                     style = TextStyle(
                         color = if (isSelected) Color.White else Color.Gray,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
+                        fontSize = 13.sp
                     )
                 )
             }

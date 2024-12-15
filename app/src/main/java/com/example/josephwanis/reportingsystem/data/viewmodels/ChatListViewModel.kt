@@ -1,5 +1,6 @@
 package com.example.josephwanis.reportingsystem.data.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,8 +18,8 @@ class ChatListViewModel(
     private val _chatSessions = MutableLiveData<List<ChatSession>>()
     val chatSessions: LiveData<List<ChatSession>> get() = _chatSessions
 
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String> get() = _errorMessage
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: MutableLiveData<String?> get() = _errorMessage
 
     // Function to get chat sessions for a specific user
     fun getChatSessionsForUser(userId: String, isKnownUser: Boolean) {
@@ -48,6 +49,17 @@ class ChatListViewModel(
                     }
                 }
 
+                filteredChatSessions.forEach { session ->
+                    Log.d("ChatRepository", "Chat Session ID: ${session.sessionId}")
+                    Log.d("ChatRepository", "Last Message: ${session.lastMessage}")
+
+                    // Additional detailed logging
+                    println("Chat Session Details:")
+                    println("Session ID: ${session.sessionId}")
+                    println("Participants: ${session.participants}")
+                    println("Last Message Content: ${session.lastMessage?.content}")
+                    println("Last Message Timestamp: ${session.lastMessage?.timestamp}")
+                }
                 _chatSessions.value = filteredChatSessions
             } catch (e: Exception) {
                 // Handle any errors that occur during the fetch operation

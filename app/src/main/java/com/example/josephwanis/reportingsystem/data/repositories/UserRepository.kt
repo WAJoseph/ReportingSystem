@@ -3,6 +3,7 @@ package com.example.josephwanis.reportingsystem.data.repositories
 import com.example.josephwanis.reportingsystem.data.models.User
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirebaseAuthManager
 import com.example.josephwanis.reportingsystem.data.remote.firebase.FirestoreManager
+import com.example.josephwanis.reportingsystem.data.util.HashUtils
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -26,8 +27,11 @@ class UserRepository(private val firebaseAuthManager: FirebaseAuthManager) {
         return withContext(Dispatchers.IO) {
             try {
                 val user = firebaseAuthManager.registerUserWithEmailAndPassword(email, password)
+
+                val hashedEmail = HashUtils.hashEmail(email)
+
                 // Create a new user with the provided email, display name, and user ID from authentication
-                val newUser = User(user.uid, displayName, email, null, mutableSetOf(), mutableSetOf(), isKnownUser)
+                val newUser = User(user.uid, displayName, hashedEmail, null, mutableSetOf(), mutableSetOf(), isKnownUser)
 
                 // Launch a separate coroutine for adding the user to Firestore
                 val addUserJob = launch {

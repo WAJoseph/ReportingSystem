@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.josephwanis.reportingsystem.data.models.User
 import com.example.josephwanis.reportingsystem.data.repositories.ChatRepository
 import com.example.josephwanis.reportingsystem.data.repositories.UserRepository
+import com.example.josephwanis.reportingsystem.data.util.HashUtils
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import kotlinx.coroutines.launch
